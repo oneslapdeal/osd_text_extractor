@@ -1,0 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyCharm IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# Virtual environment
+venv/
+env/
+.venv/
+ENV/
+
+# Build and distribution directories
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.prod
+.env.dev
+
+# Database files
+*.db
+*.sqlite
+
+# macOS
+.DS_Store
+
+# VS Code
+.vscode/
+directory-tree.txt
+tmp/
+.ruff_cache/
+.dockerignore

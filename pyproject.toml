@@ -1,0 +1,10 @@
+[project]
+name = "osd_text_extractor"
+version = "0.1.0"
+description = "Module to extract plain text from different formats"
+authors = [
+    {name = "OneSlap Team", email = "lxarbuz@gmail.com"}
+]
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.12"
