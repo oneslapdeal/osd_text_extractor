@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-
 from osd_text_extractor.domain.exceptions import TextLengthError
-
+import re
 
 @dataclass(frozen=True)
 class PlainText:
@@ -12,8 +11,15 @@ class PlainText:
             raise TextLengthError("Text length should be greater than zero")
 
     def _clean(self) -> str:
-        return self.value
+        text = re.sub(r'[^\x00-\x7F\s\n]', '', self.value)
+        text = re.sub(r'[\t\r\f]+', ' ', text)
+        text = re.sub(r' +', ' ', text)
+        text = re.sub(r'\n+', '\n', text)
+        text = text.strip()
+        return text
 
     def to_str(self) -> str:
         cleaned_value = self._clean()
+        if len(cleaned_value) == 0:
+            raise TextLengthError("Text length should be greater than zero")
         return cleaned_value

@@ -1,5 +1,5 @@
 import fitz
-
+import emoji
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 
@@ -13,6 +13,8 @@ class PDFExtractor(TextExtractor):
                 for page in doc:
                     text = page.get_text("text")
                     extracted_pages.append(text)
-            return "\n".join(extracted_pages)
+            text = "\n".join(extracted_pages)
+            text = emoji.replace_emoji(text, replace='')
+            return text
         except Exception as e:
             raise ExtractionError("Failed to extract PDF text") from e

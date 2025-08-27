@@ -1,7 +1,6 @@
 from io import BytesIO
-
+import emoji
 from docx import Document
-
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 
@@ -20,6 +19,8 @@ class DOCXExtractor(TextExtractor):
                     for cell in row.cells:
                         if cell.text.strip():
                             text_parts.append(cell.text.strip())
-            return "\n".join(text_parts)
+            text = "\n".join(text_parts)
+            text = emoji.replace_emoji(text, replace='')
+            return text
         except Exception as e:
             raise ExtractionError("Failed to extract DOCX text") from e

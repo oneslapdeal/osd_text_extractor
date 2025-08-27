@@ -1,5 +1,5 @@
 from io import BytesIO
-
+import emoji
 from openpyxl import load_workbook
 
 from osd_text_extractor.domain.interfaces import TextExtractor
@@ -33,6 +33,8 @@ class XLSXExtractor(TextExtractor):
                         if row_text:
                             all_text.append(" ".join(row_text))
                 workbook.close()
-                return "\n".join(all_text)
+                text = "\n".join(all_text)
+                text = emoji.replace_emoji(text, replace='')
+                return text
         except Exception as e:
             raise ExtractionError("Failed to extract XLSX text") from e

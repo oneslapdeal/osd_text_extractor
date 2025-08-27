@@ -1,4 +1,5 @@
 import csv
+import emoji
 from io import StringIO
 
 from osd_text_extractor.domain.interfaces import TextExtractor
@@ -28,6 +29,8 @@ class CSVExtractor(TextExtractor):
                         row_text.append(cell)
                 if row_text:
                     extracted_text.append(" ".join(row_text))
-            return "\n".join(extracted_text)
+            text = "\n".join(extracted_text)
+            text = emoji.replace_emoji(text, replace='')
+            return text
         except Exception as e:
             raise ExtractionError("Failed to extract CSV text") from e

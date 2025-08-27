@@ -1,6 +1,6 @@
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as et
 from io import BytesIO
-
+import emoji
 from odf.opendocument import load
 
 from osd_text_extractor.domain.interfaces import TextExtractor
@@ -17,7 +17,9 @@ class ODTExtractor(TextExtractor):
         try:
             with BytesIO(file_content) as buffer:
                 xml_text = decode_to_utf8(load(buffer).xml())
-                root = ET.fromstring(xml_text)
-                return xml_node_to_plain_text(root).replace("\n\n", "\n")
+                root = et.fromstring(xml_text)
+                text = xml_node_to_plain_text(root)
+                text = emoji.replace_emoji(text, replace='')
+                return text
         except Exception as e:
             raise ExtractionError("Failed to extract ODT text") from e

@@ -1,5 +1,5 @@
 from striprtf.striprtf import rtf_to_text
-
+import emoji
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 from osd_text_extractor.infrastructure.extractors.utils import decode_to_utf8
@@ -12,7 +12,9 @@ class RTFExtractor(TextExtractor):
             rtf_content = decode_to_utf8(file_content)
             clean_text = rtf_to_text(rtf_content)
             clean_text = _clean_text(clean_text)
-            return clean_text.strip()
+            text = clean_text.strip()
+            text = emoji.replace_emoji(text, replace='')
+            return text
         except Exception as e:
             raise ExtractionError("Failed to extract RTF text") from e
 

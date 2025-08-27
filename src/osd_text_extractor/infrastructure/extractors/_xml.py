@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as et
-
+import emoji
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 from osd_text_extractor.infrastructure.extractors.utils import (
@@ -14,6 +14,8 @@ class XMLExtractor(TextExtractor):
         try:
             xml_text = decode_to_utf8(file_content)
             root = et.fromstring(xml_text)
-            return xml_node_to_plain_text(root)
+            text = xml_node_to_plain_text(root)
+            text = emoji.replace_emoji(text, replace='')
+            return text
         except Exception as e:
             raise ExtractionError("Failed to extract XML text") from e

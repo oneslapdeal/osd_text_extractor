@@ -1,5 +1,5 @@
 import json
-
+import emoji
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 from osd_text_extractor.infrastructure.extractors.utils import decode_to_utf8
@@ -11,7 +11,9 @@ class JSONExtractor(TextExtractor):
         try:
             json_data = json.loads(decode_to_utf8(file_content))
             extracted_values = _recursive_extract(json_data)
-            return " ".join(extracted_values).strip()
+            text= " ".join(extracted_values).strip()
+            text = emoji.replace_emoji(text, replace='')
+            return text
         except Exception as e:
             raise ExtractionError("Failed to extract text from JSON") from e
 

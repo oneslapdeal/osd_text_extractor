@@ -1,5 +1,5 @@
 from io import BytesIO
-
+import emoji
 from odf.opendocument import load
 from odf.table import Table, TableCell, TableRow
 from odf.text import P
@@ -34,6 +34,8 @@ class ODSExtractor(TextExtractor):
                                 row_text.append(cell_text)
                         if row_text:
                             all_text.append(" ".join(row_text))
-                return "\n".join(all_text)
+                text = "\n".join(all_text)
+                text = emoji.replace_emoji(text, replace='')
+                return text
         except Exception as e:
             raise ExtractionError("Failed to extract ODS text") from e
