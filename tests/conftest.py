@@ -6,49 +6,95 @@ from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.extractors import ExtractorFactory
 
 
-class MockExtractor(TextExtractor):
+class MockExtractor:
+    """Mock extractor that follows TextExtractor protocol correctly."""
+
     def __init__(self, return_value: str = "extracted text"):
         self.return_value = return_value
         self.extract_calls = []
 
-    def extract_plain_text(self, content: bytes) -> str:
-        self.extract_calls.append(content)
-        return self.return_value
+    @staticmethod
+    def create_with_return_value(return_value: str) -> type:
+        """Create a mock extractor class that returns specific value."""
+
+        class SpecificMockExtractor:
+            @staticmethod
+            def extract_plain_text(content: bytes) -> str:
+                return return_value
+
+        return SpecificMockExtractor
+
+    @staticmethod
+    def extract_plain_text(content: bytes) -> str:
+        # This won't work for instance tracking, but follows protocol
+        return "default extracted text"
 
 
-class MockFailingExtractor(TextExtractor):
+class TrackingMockExtractor:
+    """Mock extractor that tracks calls (for testing purposes only)."""
+
+    calls: list[bytes] = []
+    return_value: str = "extracted text"
+
+    @classmethod
+    def extract_plain_text(cls, content: bytes) -> str:
+        cls.calls.append(content)
+        return cls.return_value
+
+    @classmethod
+    def reset(cls) -> None:
+        cls.calls.clear()
+
+    @classmethod
+    def set_return_value(cls, value: str) -> None:
+        cls.return_value = value
+
+
+class MockFailingExtractor:
     def __init__(self, exception: Exception):
         self.exception = exception
 
-    def extract_plain_text(self, content: bytes) -> str:
-        raise self.exception
+    @staticmethod
+    def extract_plain_text(content: bytes) -> str:
+        raise Exception("Mock extraction error")
 
 
 @pytest.fixture
-def mock_extractor() -> MockExtractor:
-    return MockExtractor("test extracted text")
+def tracking_mock_extractor() -> type[TrackingMockExtractor]:
+    """Returns extractor class that tracks calls."""
+    TrackingMockExtractor.reset()
+    TrackingMockExtractor.set_return_value("test extracted text")
+    return TrackingMockExtractor
 
 
 @pytest.fixture
-def empty_mock_extractor() -> MockExtractor:
-    return MockExtractor("")
+def empty_mock_extractor() -> type:
+    """Returns extractor that produces empty text."""
+    return MockExtractor.create_with_return_value("")
 
 
 @pytest.fixture
-def failing_mock_extractor() -> MockFailingExtractor:
+def failing_mock_extractor() -> type:
+    """Returns extractor that raises an error."""
     from osd_text_extractor.infrastructure.exceptions import ExtractionError
-    return MockFailingExtractor(ExtractionError("Test extraction error"))
+
+    class FailingExtractor:
+        @staticmethod
+        def extract_plain_text(content: bytes) -> str:
+            raise ExtractionError("Test extraction error")
+
+    return FailingExtractor
 
 
 @pytest.fixture
-def mock_extractor_factory(mock_extractor: MockExtractor) -> Mock:
+def mock_extractor_factory(tracking_mock_extractor: type) -> Mock:
     factory = Mock(spec=ExtractorFactory)
-    factory.get_extractor.return_value = mock_extractor
+    factory.get_extractor.return_value = tracking_mock_extractor
     return factory
 
 
 @pytest.fixture
-def failing_extractor_factory(failing_mock_extractor: MockFailingExtractor) -> Mock:
+def failing_extractor_factory(failing_mock_extractor: type) -> Mock:
     factory = Mock(spec=ExtractorFactory)
     factory.get_extractor.return_value = failing_mock_extractor
     return factory
@@ -125,12 +171,53 @@ def edge_case_content(request: Any) -> bytes:
 @pytest.fixture
 def extractor_mapping() -> dict[str, type[TextExtractor]]:
     return {
-        "txt": MockExtractor,
-        "pdf": MockExtractor,
-        "docx": MockExtractor,
+        "txt": MockExtractor.create_with_return_value("txt content"),
+        "pdf": MockExtractor.create_with_return_value("pdf content"),
+        "docx": MockExtractor.create_with_return_value("docx content"),
     }
 
 
 @pytest.fixture
 def real_extractor_factory(extractor_mapping: dict[str, type[TextExtractor]]) -> ExtractorFactory:
     return ExtractorFactory(extractor_mapping)
+
+
+# Real test data fixtures
+@pytest.fixture
+def sample_txt_content() -> bytes:
+    return b"This is a simple text file.\nWith multiple lines.\nAnd some content."
+
+
+@pytest.fixture
+def sample_html_content() -> bytes:
+    return b"""<!DOCTYPE html>
+    <html>
+    <head><title>Test Page</title></head>
+    <body>
+        <h1>Main Title</h1>
+        <p>Paragraph with <strong>bold</strong> text.</p>
+        <script>alert('should be removed');</script>
+    </body>
+    </html>"""
+
+
+@pytest.fixture
+def sample_json_content() -> bytes:
+    return b'''{
+        "title": "Test Document",
+        "content": "Main content text",
+        "metadata": {
+            "author": "Test Author", 
+            "tags": ["test", "sample"]
+        }
+    }'''
+
+
+@pytest.fixture
+def sample_csv_content() -> bytes:
+    return b"Name,Age,City\nJohn Doe,30,New York\nJane Smith,25,Los Angeles"
+
+
+@pytest.fixture
+def unicode_test_content() -> bytes:
+    return "Latin text with Русский 中文 العربية 🌍 symbols".encode('utf-8')
