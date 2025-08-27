@@ -353,6 +353,40 @@ class TestIntegration:
         assert "Other namespace content" in result
         assert "Regular content" in result
 
+    def test_extract_text_xml_large_file_protection(self) -> None:
+        """Test XML extraction with size limits."""
+        # Create a very large XML content (over 10MB)
+        large_xml_parts = ['<root>']
+        for i in range(100000):  # This will create ~12MB XML
+            large_xml_parts.append(f'<item{i}>Content {i}</item{i}>')
+        large_xml_parts.append('</root>')
+        large_xml = ''.join(large_xml_parts).encode()
+
+        with pytest.raises(Exception):  # Should raise ExtractionError for size limit
+            extract_text(large_xml, "xml")
+
+    def test_extract_text_xml_deep_nesting_protection(self) -> None:
+        """Test XML extraction with nesting depth limits."""
+        # Create deeply nested XML (over 50 levels)
+        xml_parts = ['<root>']
+        for i in range(60):  # 60 levels deep
+            xml_parts.append(f'<level{i}>')
+        xml_parts.append('Deep content')
+        for i in range(59, -1, -1):
+            xml_parts.append(f'</level{i}>')
+        xml_parts.append('</root>')
+        deep_xml = ''.join(xml_parts).encode()
+
+        with pytest.raises(Exception):  # Should raise ExtractionError for nesting limit
+            extract_text(deep_xml, "xml")
+
+    def test_extract_text_xml_malformed_protection(self) -> None:
+        """Test XML extraction with malformed XML."""
+        malformed_xml = b'<root><unclosed_tag>Content without closing</root>'
+
+        with pytest.raises(Exception):  # Should raise ExtractionError for invalid XML
+            extract_text(malformed_xml, "xml")
+
     def test_extract_text_end_to_end_workflow_real(self) -> None:
         """Test complete end-to-end workflow with real extraction."""
         test_cases = [
