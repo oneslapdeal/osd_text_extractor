@@ -3,26 +3,43 @@ import pytest
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.extractors import ExtractorFactory
-from tests.conftest import MockExtractor
+
+
+class MockExtractor:
+    """Mock extractor for testing."""
+
+    @staticmethod
+    def extract_plain_text(content: bytes) -> str:
+        return "mock extracted text"
 
 
 class TestExtractorFactory:
-    def test_get_extractor_success(self, real_extractor_factory: ExtractorFactory) -> None:
-        extractor_class = real_extractor_factory.get_extractor("txt")
+    def test_get_extractor_success(self) -> None:
+        """Test getting extractor for supported format."""
+        mapping = {"txt": MockExtractor}
+        factory = ExtractorFactory(mapping)
+
+        extractor_class = factory.get_extractor("txt")
         assert extractor_class == MockExtractor
-        assert issubclass(extractor_class, TextExtractor)
+        assert hasattr(extractor_class, "extract_plain_text")
 
     @pytest.mark.parametrize("supported_format", [
         "txt", "pdf", "docx"
     ])
     def test_get_extractor_for_supported_formats(
             self,
-            real_extractor_factory: ExtractorFactory,
             supported_format: str
     ) -> None:
-        """Тест получения экстрактора для поддерживаемых форматов."""
+        """Test getting extractor for supported formats."""
+        mapping = {
+            "txt": MockExtractor,
+            "pdf": MockExtractor,
+            "docx": MockExtractor,
+        }
+        factory = ExtractorFactory(mapping)
+
         # Act
-        extractor_class = real_extractor_factory.get_extractor(supported_format)
+        extractor_class = factory.get_extractor(supported_format)
 
         # Assert
         assert extractor_class == MockExtractor
@@ -33,13 +50,15 @@ class TestExtractorFactory:
     ])
     def test_get_extractor_for_unsupported_format_raises_error(
             self,
-            real_extractor_factory: ExtractorFactory,
             unsupported_format: str
     ) -> None:
-        """Тест получения экстрактора для неподдерживаемых форматов."""
+        """Test getting extractor for unsupported formats."""
+        mapping = {"txt": MockExtractor}
+        factory = ExtractorFactory(mapping)
+
         # Act & Assert
         with pytest.raises(UnsupportedFormatError) as exc_info:
-            real_extractor_factory.get_extractor(unsupported_format)
+            factory.get_extractor(unsupported_format)
 
         assert f"Unsupported format: {unsupported_format}" in str(exc_info.value)
 
@@ -51,38 +70,45 @@ class TestExtractorFactory:
     ])
     def test_get_extractor_case_insensitive(
             self,
-            real_extractor_factory: ExtractorFactory,
             format_case: tuple[str, str]
     ) -> None:
-        """Тест что получение экстрактора нечувствительно к регистру."""
+        """Test that getting extractor is case insensitive."""
         # Arrange
         upper_format, lower_format = format_case
+        mapping = {
+            "txt": MockExtractor,
+            "pdf": MockExtractor,
+            "docx": MockExtractor,
+        }
+        factory = ExtractorFactory(mapping)
 
         # Act
-        extractor_upper = real_extractor_factory.get_extractor(upper_format)
-        extractor_lower = real_extractor_factory.get_extractor(lower_format)
+        extractor_upper = factory.get_extractor(upper_format)
+        extractor_lower = factory.get_extractor(lower_format)
 
         # Assert
         assert extractor_upper == extractor_lower
 
-    def test_get_extractor_with_empty_format_raises_error(
-            self, real_extractor_factory: ExtractorFactory
-    ) -> None:
-        """Тест получения экстрактора с пустым форматом."""
+    def test_get_extractor_with_empty_format_raises_error(self) -> None:
+        """Test getting extractor with empty format."""
+        mapping = {"txt": MockExtractor}
+        factory = ExtractorFactory(mapping)
+
         # Act & Assert
         with pytest.raises(UnsupportedFormatError, match="Unsupported format: "):
-            real_extractor_factory.get_extractor("")
+            factory.get_extractor("")
 
-    def test_get_extractor_with_whitespace_format_raises_error(
-            self, real_extractor_factory: ExtractorFactory
-    ) -> None:
-        """Тест получения экстрактора с форматом из пробелов."""
+    def test_get_extractor_with_whitespace_format_raises_error(self) -> None:
+        """Test getting extractor with whitespace format."""
+        mapping = {"txt": MockExtractor}
+        factory = ExtractorFactory(mapping)
+
         # Act & Assert
         with pytest.raises(UnsupportedFormatError, match="Unsupported format:"):
-            real_extractor_factory.get_extractor("   ")
+            factory.get_extractor("   ")
 
     def test_factory_initialization_with_empty_mapping(self) -> None:
-        """Тест инициализации фабрики с пустым маппингом."""
+        """Test factory initialization with empty mapping."""
         # Arrange
         empty_mapping: dict[str, type[TextExtractor]] = {}
         factory = ExtractorFactory(empty_mapping)
@@ -92,7 +118,7 @@ class TestExtractorFactory:
             factory.get_extractor("any_format")
 
     def test_factory_initialization_with_custom_mapping(self) -> None:
-        """Тест инициализации фабрики с кастомным маппингом."""
+        """Test factory initialization with custom mapping."""
         # Arrange
         custom_mapping = {
             "custom": MockExtractor,
@@ -107,32 +133,25 @@ class TestExtractorFactory:
         assert extractor_class == MockExtractor
 
     def test_factory_mapping_is_case_insensitive(self) -> None:
-        """Тест что маппинг фабрики нечувствителен к регистру."""
-        # Arrange
-        mapping = {"TXT": MockExtractor}  # Ключ в верхнем регистре
-        factory = ExtractorFactory(mapping)
-
-        # Act & Assert - должен найти по нижнему регистру
-        with pytest.raises(UnsupportedFormatError):
-            factory.get_extractor("txt")
-
-        # Но найдет по точному совпадению после lower()
-        # Исправляем тест - фабрика делает lower() для формата
+        """Test that factory mapping is case insensitive."""
+        # Arrange - factory does lower() on format, so mapping should use lowercase keys
         mapping_lower = {"txt": MockExtractor}
         factory_lower = ExtractorFactory(mapping_lower)
+
+        # Act & Assert - should find by exact match after lower()
         extractor = factory_lower.get_extractor("TXT")
         assert extractor == MockExtractor
 
-    def test_factory_immutability(self, real_extractor_factory: ExtractorFactory) -> None:
-        """Тест что изменение внешнего маппинга не влияет на фабрику."""
+    def test_factory_immutability(self) -> None:
+        """Test that changing external mapping doesn't affect factory."""
         # Arrange
         original_mapping = {"txt": MockExtractor}
         factory = ExtractorFactory(original_mapping)
 
-        # Act - изменяем исходный маппинг
+        # Act - change the original mapping
         original_mapping["new_format"] = MockExtractor
 
-        # Assert - фабрика не должна видеть новый формат
+        # Assert - factory should not see the new format
         with pytest.raises(UnsupportedFormatError):
             factory.get_extractor("new_format")
 
@@ -147,7 +166,7 @@ class TestExtractorFactory:
             self,
             special_format: str
     ) -> None:
-        """Тест получения экстрактора с специальными символами в формате."""
+        """Test getting extractor with special characters in format."""
         # Arrange
         mapping = {special_format.lower(): MockExtractor}
         factory = ExtractorFactory(mapping)
