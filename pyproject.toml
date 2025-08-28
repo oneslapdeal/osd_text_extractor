@@ -54,10 +54,10 @@ dev = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/OneSlap/osd-text-extractor"
-"Bug Reports" = "https://github.com/OneSlap/osd-text-extractor/issues"
-"Source" = "https://github.com/OneSlap/osd-text-extractor"
-"Documentation" = "https://github.com/OneSlap/osd-text-extractor#readme"
+"Homepage" = "https://github.com/oneslapdeal/osd_text_extractor"
+"Bug Reports" = "https://github.com/oneslapdeal/osd_text_extractor/issues"
+"Source" = "https://github.com/oneslapdeal/osd_text_extractor"
+"Documentation" = "https://github.com/oneslapdeal/osd_text_extractor#readme"
 
 [build-system]
 requires = [
