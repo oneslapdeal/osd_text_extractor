@@ -1,7 +1,7 @@
 [project]
 name = "osd-text-extractor"
 version = "0.1.0"
-description = "Module to extract plain text from different formats for LLM purposes"
+description = "A Python library for extracting plain text from various document formats for LLM and NLP purposes"
 authors = [
     {name = "OneSlap Team", email = "lxarbuz@gmail.com"}
 ]
