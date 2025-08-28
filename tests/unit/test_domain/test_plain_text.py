@@ -1,5 +1,4 @@
 import pytest
-
 from osd_text_extractor.domain.entities import PlainText
 from osd_text_extractor.domain.exceptions import TextLengthError
 
@@ -14,19 +13,22 @@ class TestPlainText:
     def test_create_plain_text_with_empty_string_raises_error(self) -> None:
         """Test that empty string raises error during creation."""
         with pytest.raises(
-            TextLengthError, match="Text length should be greater than zero"
+            TextLengthError,
+            match="Text length should be greater than zero",
         ):
             PlainText(value="")
 
     def test_create_plain_text_with_whitespace_only_raises_error(self) -> None:
         """Test that whitespace-only string raises error during creation."""
         with pytest.raises(
-            TextLengthError, match="Text length should be greater than zero"
+            TextLengthError,
+            match="Text length should be greater than zero",
         ):
             PlainText(value="   ")
 
         with pytest.raises(
-            TextLengthError, match="Text length should be greater than zero"
+            TextLengthError,
+            match="Text length should be greater than zero",
         ):
             PlainText(value="\n\n\t  ")
 
@@ -80,7 +82,8 @@ class TestPlainText:
         text_value = "Русский 中文 العربية 🌍"
         plain_text = PlainText(value=text_value)
         with pytest.raises(
-            TextLengthError, match="Text length should be greater than zero"
+            TextLengthError,
+            match="Text length should be greater than zero",
         ):
             plain_text.to_str()
 
@@ -127,7 +130,9 @@ class TestPlainText:
         ],
     )
     def test_to_str_parametrized_valid_cases(
-        self, input_text: str, expected_output: str
+        self,
+        input_text: str,
+        expected_output: str,
     ) -> None:
         """Test to_str() with various valid inputs."""
         plain_text = PlainText(value=input_text)

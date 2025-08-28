@@ -1,5 +1,4 @@
 import pytest
-
 from osd_text_extractor import extract_text
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
 from osd_text_extractor.domain.exceptions import TextLengthError
@@ -132,7 +131,8 @@ class TestIntegration:
         assert "2024" in result
 
     def test_extract_text_unicode_handling_real(
-        self, unicode_test_content: bytes
+        self,
+        unicode_test_content: bytes,
     ) -> None:
         """Test that Unicode characters are properly filtered out."""
         result = extract_text(unicode_test_content, "txt")
@@ -151,10 +151,12 @@ class TestIntegration:
         assert "🌍" not in result
 
     @pytest.mark.parametrize(
-        "unsupported_format", ["exe", "dll", "bin", "unknown", "fake", "pptx", "xls"]
+        "unsupported_format",
+        ["exe", "dll", "bin", "unknown", "fake", "pptx", "xls"],
     )
     def test_extract_text_unsupported_formats_real(
-        self, unsupported_format: str
+        self,
+        unsupported_format: str,
     ) -> None:
         """Test that unsupported formats raise appropriate error."""
         content = b"Some content"
@@ -191,7 +193,8 @@ class TestIntegration:
         ],
     )
     def test_extract_text_case_insensitive_formats_real(
-        self, format_case: tuple[str, str, bytes]
+        self,
+        format_case: tuple[str, str, bytes],
     ) -> None:
         """Test that format matching is case insensitive."""
         upper_format, lower_format, content = format_case
@@ -215,8 +218,9 @@ class TestIntegration:
 
     def test_extract_text_mixed_valid_invalid_chars_real(self) -> None:
         """Test extraction with mixed valid/invalid characters."""
-        mixed_content = ("Valid English text mixed with "
-                         "Русский текст and 中文 and symbols @#$%").encode()
+        mixed_content = (
+            "Valid English text mixed with Русский текст and 中文 and symbols @#$%"
+        ).encode()
 
         result = extract_text(mixed_content, "txt")
 
@@ -279,7 +283,8 @@ class TestIntegration:
         ],
     )
     def test_extract_text_various_encodings_real(
-        self, content_encoding: tuple[str, str]
+        self,
+        content_encoding: tuple[str, str],
     ) -> None:
         """Test extraction with various text encodings."""
         text, encoding = content_encoding
@@ -382,7 +387,7 @@ class TestIntegration:
         deep_xml = "".join(xml_parts).encode()
 
         with pytest.raises(
-            ExtractionError
+            ExtractionError,
         ):  # Should raise ExtractionError for nesting limit
             extract_text(deep_xml, "xml")
 
@@ -391,7 +396,7 @@ class TestIntegration:
         malformed_xml = b"<root><unclosed_tag>Content without closing</root>"
 
         with pytest.raises(
-            ExtractionError
+            ExtractionError,
         ):  # Should raise ExtractionError for invalid XML
             extract_text(malformed_xml, "xml")
 
@@ -413,6 +418,6 @@ class TestIntegration:
 
             # Verify only Latin chars, digits, spaces, newlines
             for char in result:
-                assert (
-                    char.isalnum() or char in " \n"
-                ), f"Invalid character found: {repr(char)}"
+                assert char.isalnum() or char in " \n", (
+                    f"Invalid character found: {repr(char)}"
+                )

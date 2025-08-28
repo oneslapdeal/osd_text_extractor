@@ -2,7 +2,6 @@ from typing import Any
 from unittest.mock import Mock
 
 import pytest
-
 from osd_text_extractor.application.use_cases import ExtractTextUseCase
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.extractors import ExtractorFactory
@@ -138,7 +137,7 @@ def test_format() -> str:
         ("txt", b"TXT content"),
         ("html", b"<html>HTML content</html>"),
         ("json", b'{"key": "value"}'),
-    ]
+    ],
 )
 def format_content_pair(request: Any) -> tuple[str, bytes]:
     return request.param
@@ -160,7 +159,7 @@ def format_content_pair(request: Any) -> tuple[str, bytes]:
         "fb2",
         "ods",
         "odt",
-    ]
+    ],
 )
 def supported_format(request: Any) -> str:
     return request.param
@@ -177,7 +176,7 @@ def unsupported_format(request: Any) -> str:
         b"   ",
         b"\n\n\n",
         b"\t\t\t",
-    ]
+    ],
 )
 def empty_content(request: Any) -> bytes:
     return request.param
@@ -188,7 +187,7 @@ def empty_content(request: Any) -> bytes:
         ("Very long text " * 1000).encode(),
         b"Unicode test: \xd0\xbf\xd1\x80\xd0\xb8\xd0\xb2\xd0\xb5\xd1\x82",
         bytes(range(256)),
-    ]
+    ],
 )
 def edge_case_content(request: Any) -> bytes:
     return request.param

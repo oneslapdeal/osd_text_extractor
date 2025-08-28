@@ -1,10 +1,7 @@
 import defusedxml.ElementTree as Et
 import pytest
-
-from osd_text_extractor.infrastructure.extractors.utils import (
-    decode_to_utf8,
-    xml_node_to_plain_text,
-)
+from osd_text_extractor.infrastructure.extractors.utils import decode_to_utf8
+from osd_text_extractor.infrastructure.extractors.utils import xml_node_to_plain_text
 
 
 class TestDecodeToUTF8:
@@ -117,8 +114,10 @@ class TestXMLNodeToPlainText:
         assert "Deep text" in result
 
     def test_mixed_content(self) -> None:
-        xml = ("<root>Before <em>emphasized</em> "
-               "middle <strong>strong</strong> after</root>")
+        xml = (
+            "<root>Before <em>emphasized</em> "
+            "middle <strong>strong</strong> after</root>"
+        )
         root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "Before" in result

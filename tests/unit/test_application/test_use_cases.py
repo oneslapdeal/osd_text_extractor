@@ -1,7 +1,6 @@
 from unittest.mock import Mock
 
 import pytest
-
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
 from osd_text_extractor.application.use_cases import ExtractTextUseCase
 from osd_text_extractor.domain.exceptions import TextLengthError
@@ -43,8 +42,9 @@ class TestExtractTextUseCase:
             return SpecificMockExtractor
 
         for content, format_name, expected_result in test_cases:
-            mock_extractor_factory.get_extractor.return_value = (
-                create_mock_extractor(expected_result))
+            mock_extractor_factory.get_extractor.return_value = create_mock_extractor(
+                expected_result,
+            )
             use_case = ExtractTextUseCase(mock_extractor_factory)
 
             result = use_case.execute(content, format_name)
@@ -55,7 +55,9 @@ class TestExtractTextUseCase:
             mock_extractor_factory.reset_mock()
 
     def test_execute_with_unsupported_format_raises_error(
-        self, unsupported_format_factory: Mock, test_content: bytes
+        self,
+        unsupported_format_factory: Mock,
+        test_content: bytes,
     ) -> None:
         use_case = ExtractTextUseCase(unsupported_format_factory)
 
@@ -63,7 +65,10 @@ class TestExtractTextUseCase:
             use_case.execute(test_content, "unsupported")
 
     def test_execute_with_extraction_error(
-        self, failing_extractor_factory: Mock, test_content: bytes, test_format: str
+        self,
+        failing_extractor_factory: Mock,
+        test_content: bytes,
+        test_format: str,
     ) -> None:
         use_case = ExtractTextUseCase(failing_extractor_factory)
 
@@ -71,19 +76,25 @@ class TestExtractTextUseCase:
             use_case.execute(test_content, test_format)
 
     def test_execute_with_empty_extracted_text_raises_error(
-        self, empty_mock_extractor: type, test_content: bytes, test_format: str
+        self,
+        empty_mock_extractor: type,
+        test_content: bytes,
+        test_format: str,
     ) -> None:
         factory = Mock()
         factory.get_extractor.return_value = empty_mock_extractor
         use_case = ExtractTextUseCase(factory)
 
         with pytest.raises(
-            TextLengthError, match="Text length should be greater than zero"
+            TextLengthError,
+            match="Text length should be greater than zero",
         ):
             use_case.execute(test_content, test_format)
 
     def test_execute_format_case_sensitivity(
-        self, mock_extractor_factory: Mock, test_content: bytes
+        self,
+        mock_extractor_factory: Mock,
+        test_content: bytes,
     ) -> None:
         format_cases = ["PDF", "Pdf", "pdf", "TXT", "txt", "HTML", "html"]
 
@@ -123,7 +134,10 @@ class TestExtractTextUseCase:
         assert binary_content in tracking_mock_extractor.calls
 
     def test_execute_creates_and_validates_plain_text_entity(
-        self, mock_extractor_factory: Mock, test_content: bytes, test_format: str
+        self,
+        mock_extractor_factory: Mock,
+        test_content: bytes,
+        test_format: str,
     ) -> None:
         class MixedContentExtractor:
             @staticmethod
@@ -140,7 +154,10 @@ class TestExtractTextUseCase:
         assert result == "Latin text with mixed content"
 
     def test_execute_with_non_latin_only_content_raises_error(
-        self, mock_extractor_factory: Mock, test_content: bytes, test_format: str
+        self,
+        mock_extractor_factory: Mock,
+        test_content: bytes,
+        test_format: str,
     ) -> None:
         class NonLatinExtractor:
             @staticmethod
@@ -152,7 +169,8 @@ class TestExtractTextUseCase:
         use_case = ExtractTextUseCase(mock_extractor_factory)
 
         with pytest.raises(
-            TextLengthError, match="Text length should be greater than zero"
+            TextLengthError,
+            match="Text length should be greater than zero",
         ):
             use_case.execute(test_content, test_format)
 
@@ -188,7 +206,9 @@ class TestExtractTextUseCase:
         assert result == expected_clean
 
     def test_execute_preserves_extractor_error_context(
-        self, test_content: bytes, test_format: str
+        self,
+        test_content: bytes,
+        test_format: str,
     ) -> None:
         class SpecificErrorExtractor:
             @staticmethod
@@ -204,7 +224,9 @@ class TestExtractTextUseCase:
             use_case.execute(test_content, test_format)
 
     def test_execute_multiple_calls_independence(
-        self, mock_extractor_factory: Mock, tracking_mock_extractor: type
+        self,
+        mock_extractor_factory: Mock,
+        tracking_mock_extractor: type,
     ) -> None:
         use_case = ExtractTextUseCase(mock_extractor_factory)
 
@@ -222,7 +244,10 @@ class TestExtractTextUseCase:
         assert len(tracking_mock_extractor.calls) == 2
 
     def test_execute_factory_interaction(
-        self, mock_extractor_factory: Mock, test_content: bytes, test_format: str
+        self,
+        mock_extractor_factory: Mock,
+        test_content: bytes,
+        test_format: str,
     ) -> None:
         use_case = ExtractTextUseCase(mock_extractor_factory)
 

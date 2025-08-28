@@ -1,5 +1,4 @@
 import pytest
-
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
 
 
@@ -16,10 +15,12 @@ class TestApplicationExceptions:
             raise UnsupportedFormatError(message)
 
     @pytest.mark.parametrize(
-        "format_name", ["exe", "dll", "unknown", "", "fake_format"]
+        "format_name",
+        ["exe", "dll", "unknown", "", "fake_format"],
     )
     def test_unsupported_format_error_with_different_formats(
-        self, format_name: str
+        self,
+        format_name: str,
     ) -> None:
         message = f"Unsupported format: {format_name}"
         exception = UnsupportedFormatError(message)

@@ -1,11 +1,10 @@
-from dishka import Provider, Scope, provide
-
+from dishka import provide
+from dishka import Provider
+from dishka import Scope
 from osd_text_extractor.application.use_cases import ExtractTextUseCase
 from osd_text_extractor.domain.interfaces import TextExtractor
-from osd_text_extractor.infrastructure.extractors import (
-    EXTRACTORS_MAPPING,
-    ExtractorFactory,
-)
+from osd_text_extractor.infrastructure.extractors import ExtractorFactory
+from osd_text_extractor.infrastructure.extractors import EXTRACTORS_MAPPING
 
 
 class AppProvider(Provider):

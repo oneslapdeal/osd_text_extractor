@@ -1,5 +1,4 @@
 import pytest
-
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.extractors import ExtractorFactory
@@ -42,10 +41,12 @@ class TestExtractorFactory:
         assert hasattr(extractor_class, "extract_plain_text")
 
     @pytest.mark.parametrize(
-        "unsupported_format", ["unsupported", "fake", "unknown", "exe", "bin"]
+        "unsupported_format",
+        ["unsupported", "fake", "unknown", "exe", "bin"],
     )
     def test_get_extractor_for_unsupported_format_raises_error(
-        self, unsupported_format: str
+        self,
+        unsupported_format: str,
     ) -> None:
         """Test getting extractor for unsupported formats."""
         mapping = {"txt": MockExtractor}
@@ -148,7 +149,8 @@ class TestExtractorFactory:
         ],
     )
     def test_get_extractor_with_special_characters_in_format(
-        self, special_format: str
+        self,
+        special_format: str,
     ) -> None:
         """Test getting extractor with special characters in format."""
         # Arrange

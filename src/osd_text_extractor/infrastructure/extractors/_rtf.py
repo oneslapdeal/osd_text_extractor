@@ -1,9 +1,8 @@
 import emoji
-from striprtf.striprtf import rtf_to_text
-
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 from osd_text_extractor.infrastructure.extractors.utils import decode_to_utf8
+from striprtf.striprtf import rtf_to_text
 
 
 class RTFExtractor(TextExtractor):

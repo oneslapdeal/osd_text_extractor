@@ -1,5 +1,4 @@
 import pytest
-
 from osd_text_extractor.domain.exceptions import TextLengthError
 
 

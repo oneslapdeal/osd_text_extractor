@@ -1,5 +1,4 @@
 import emoji
-
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 from osd_text_extractor.infrastructure.extractors.utils import decode_to_utf8

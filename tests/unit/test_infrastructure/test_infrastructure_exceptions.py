@@ -1,5 +1,4 @@
 import pytest
-
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 
 
@@ -13,7 +12,6 @@ class TestInfrastructureExceptions:
         message = "Extraction failed"
         with pytest.raises(ExtractionError, match=message):
             raise ExtractionError(message)
-
 
     def test_infrastructure_exception_can_be_caught_as_exception(self) -> None:
         with pytest.raises(ExtractionError):

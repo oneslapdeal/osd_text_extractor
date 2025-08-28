@@ -1,6 +1,8 @@
 import re
 from dataclasses import dataclass
-from string import ascii_letters, digits, punctuation
+from string import ascii_letters
+from string import digits
+from string import punctuation
 
 from osd_text_extractor.domain.exceptions import TextLengthError
 

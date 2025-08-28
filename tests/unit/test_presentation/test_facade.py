@@ -1,7 +1,7 @@
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
+from unittest.mock import patch
 
 import pytest
-
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
 from osd_text_extractor.application.use_cases import ExtractTextUseCase
 from osd_text_extractor.domain.exceptions import TextLengthError
@@ -37,12 +37,13 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_unsupported_format_error(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test handling of unsupported format error."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
         mock_use_case.execute.side_effect = UnsupportedFormatError(
-            "Unsupported format: unknown"
+            "Unsupported format: unknown",
         )
 
         mock_container = Mock()
@@ -72,12 +73,13 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_domain_validation_error(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test handling of domain validation error."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
         mock_use_case.execute.side_effect = TextLengthError(
-            "No valid text content after cleaning"
+            "No valid text content after cleaning",
         )
 
         mock_container = Mock()
@@ -85,7 +87,8 @@ class TestExtractTextFacade:
         mock_create_container.return_value = mock_container
 
         with pytest.raises(
-            TextLengthError, match="No valid text content after cleaning"
+            TextLengthError,
+            match="No valid text content after cleaning",
         ):
             extract_text(b"content", "txt")
 
@@ -93,7 +96,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_container_creation_error(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test handling of container creation error."""
         mock_create_container.side_effect = Exception("Container creation failed")
@@ -106,7 +110,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_use_case_retrieval_error(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test handling of use case retrieval error."""
         mock_container = Mock()
@@ -121,7 +126,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_container_close_error_handling(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test that container close errors don't interfere with results."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
@@ -170,7 +176,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_large_content_handling(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test extraction with large content."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
@@ -190,7 +197,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_binary_content_handling(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test extraction with binary content."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
@@ -210,7 +218,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_dependency_injection_isolation(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test that each call gets its own container instance."""
         call_count = 0
@@ -240,7 +249,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_preserves_use_case_return_type(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test that facade preserves the exact return type from use case."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
@@ -257,7 +267,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_unicode_content_handling(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test extraction with Unicode content."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
@@ -277,7 +288,8 @@ class TestExtractTextFacade:
 
     @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_format_parameter_passthrough(
-        self, mock_create_container: Mock
+        self,
+        mock_create_container: Mock,
     ) -> None:
         """Test that format parameter is passed through correctly."""
         mock_use_case = Mock(spec=ExtractTextUseCase)

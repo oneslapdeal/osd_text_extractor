@@ -2,7 +2,6 @@ from io import BytesIO
 
 import emoji
 from docx import Document
-
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 

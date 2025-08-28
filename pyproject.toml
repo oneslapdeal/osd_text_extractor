@@ -86,7 +86,6 @@ select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
     "F",   # pyflakes
-    "I",   # isort
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
@@ -122,6 +121,7 @@ convention = "google"
 
 [tool.mypy]
 python_version = "3.12"
+mypy_path = ["src"]
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -151,8 +151,23 @@ module = [
     "openpyxl.*",
     "striprtf.*",
     "defusedxml.*",
+    "emoji.*",
+    "dishka.*",
+    "bs4.*",
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "osd_text_extractor.infrastructure.extractors.*",
+]
+disable_error_code = ["no-any-return"]
+
+[[tool.mypy.overrides]]
+module = [
+    "osd_text_extractor.infrastructure.di.*",
+]
+disable_error_code = ["misc"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -175,6 +190,13 @@ filterwarnings = [
     "default",
     "ignore::DeprecationWarning",
     "ignore::PendingDeprecationWarning",
+]
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203", "W503"]
+per-file-ignores = [
+    "tests/*:E501,F841",
 ]
 
 [tool.coverage.run]

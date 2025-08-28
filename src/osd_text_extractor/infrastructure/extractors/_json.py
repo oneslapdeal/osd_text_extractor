@@ -2,7 +2,6 @@ import json
 from typing import Any
 
 import emoji
-
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 from osd_text_extractor.infrastructure.extractors.utils import decode_to_utf8
@@ -27,7 +26,7 @@ def _recursive_extract(obj: Any) -> list[str]:
     elif isinstance(obj, dict):
         for value in obj.values():
             result.extend(_recursive_extract(value))
-    elif isinstance(obj, (list, tuple)):
+    elif isinstance(obj, list | tuple):
         for item in obj:
             result.extend(_recursive_extract(item))
     return result

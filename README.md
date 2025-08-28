@@ -79,11 +79,11 @@ def extract_from_file(file_path):
     # Get file extension
     _, ext = os.path.splitext(file_path)
     format_name = ext[1:].lower()  # Remove dot and lowercase
-    
+
     # Read file content
     with open(file_path, "rb") as f:
         content = f.read()
-    
+
     # Extract text
     try:
         text = extract_text(content, format_name)
@@ -106,37 +106,37 @@ from pathlib import Path
 from osd_text_extractor import extract_text
 
 def process_directory(directory_path, output_file):
-    supported_extensions = {'.pdf', '.docx', '.xlsx', '.html', '.xml', 
-                          '.json', '.md', '.rtf', '.csv', '.txt', 
+    supported_extensions = {'.pdf', '.docx', '.xlsx', '.html', '.xml',
+                          '.json', '.md', '.rtf', '.csv', '.txt',
                           '.epub', '.fb2', '.ods', '.odt'}
-    
+
     results = []
-    
+
     for file_path in Path(directory_path).rglob('*'):
         if file_path.suffix.lower() in supported_extensions:
             try:
                 with open(file_path, 'rb') as f:
                     content = f.read()
-                
+
                 format_name = file_path.suffix[1:].lower()
                 text = extract_text(content, format_name)
-                
+
                 results.append({
                     'file': str(file_path),
                     'text': text,
                     'length': len(text)
                 })
                 print(f"✓ Processed {file_path}")
-                
+
             except Exception as e:
                 print(f"✗ Failed {file_path}: {e}")
-    
+
     # Save results
     with open(output_file, 'w', encoding='utf-8') as f:
         for result in results:
             f.write(f"=== {result['file']} ===\n")
             f.write(f"{result['text']}\n\n")
-    
+
     print(f"Processed {len(results)} files, saved to {output_file}")
 
 # Usage
@@ -205,7 +205,7 @@ Core dependencies:
 - `beautifulsoup4` - HTML/XML parsing
 - `lxml` - XML processing
 - `pymupdf` - PDF processing
-- `python-docx` - DOCX processing  
+- `python-docx` - DOCX processing
 - `openpyxl` - XLSX processing
 - `striprtf` - RTF processing
 - `odfpy` - ODS/ODT processing

@@ -1,14 +1,12 @@
+from typing import Any
+
 import defusedxml.ElementTree as Et
 import emoji
 from defusedxml.ElementTree import ParseError
-from typing import Any
-
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
-from osd_text_extractor.infrastructure.extractors.utils import (
-    decode_to_utf8,
-    xml_node_to_plain_text,
-)
+from osd_text_extractor.infrastructure.extractors.utils import decode_to_utf8
+from osd_text_extractor.infrastructure.extractors.utils import xml_node_to_plain_text
 
 
 class XMLExtractor(TextExtractor):

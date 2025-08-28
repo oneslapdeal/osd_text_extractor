@@ -1,5 +1,7 @@
 import re
-from string import ascii_letters, digits, punctuation
+from string import ascii_letters
+from string import digits
+from string import punctuation
 
 valid_characters = ascii_letters + digits + punctuation + " \n"
 texts = [

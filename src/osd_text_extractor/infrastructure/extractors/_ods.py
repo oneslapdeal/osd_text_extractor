@@ -2,9 +2,10 @@ from io import BytesIO
 
 import emoji
 from odf.opendocument import load
-from odf.table import Table, TableCell, TableRow
+from odf.table import Table
+from odf.table import TableCell
+from odf.table import TableRow
 from odf.text import P
-
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 
