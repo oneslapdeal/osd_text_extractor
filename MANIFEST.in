@@ -5,6 +5,7 @@ include Makefile
 include .gitignore
 
 recursive-include src *.py
+recursive-include src *.pyi py.typed
 recursive-exclude src __pycache__
 recursive-exclude src *.py[cod]
 recursive-exclude src *.so

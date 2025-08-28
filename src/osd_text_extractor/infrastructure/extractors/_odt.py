@@ -3,6 +3,7 @@ from io import BytesIO
 import defusedxml.ElementTree as Et
 import emoji
 from defusedxml.ElementTree import ParseError
+from typing import Any
 from odf.opendocument import load
 
 from osd_text_extractor.domain.interfaces import TextExtractor
@@ -41,7 +42,7 @@ class ODTExtractor(TextExtractor):
             raise ExtractionError("Failed to extract ODT text") from e
 
 
-def _get_max_depth(element, current_depth=0):
+def _get_max_depth(element: Any, current_depth: int = 0) -> int:
     if not element:
         return current_depth
 

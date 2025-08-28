@@ -1,6 +1,7 @@
 import defusedxml.ElementTree as Et
 import emoji
 from defusedxml.ElementTree import ParseError
+from typing import Any
 
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
@@ -33,7 +34,7 @@ class XMLExtractor(TextExtractor):
             raise ExtractionError("Failed to extract XML text") from e
 
 
-def _get_max_depth(element, current_depth=0):
+def _get_max_depth(element: Any, current_depth: int = 0) -> int:
     if not element:
         return current_depth
 

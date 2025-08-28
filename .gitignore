@@ -57,5 +57,5 @@ htmlcov/
 directory-tree.txt
 tmp/
 .ruff_cache/
-.dockerignore
-uv.lock
+.windsurf/
+htmlcov

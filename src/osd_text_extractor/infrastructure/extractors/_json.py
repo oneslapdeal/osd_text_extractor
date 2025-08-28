@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 import emoji
 
@@ -19,14 +20,14 @@ class JSONExtractor(TextExtractor):
             raise ExtractionError("Failed to extract JSON text") from e
 
 
-def _recursive_extract(obj: str | dict | list | tuple) -> list[str]:
+def _recursive_extract(obj: Any) -> list[str]:
     result = []
     if isinstance(obj, str):
         result.append(obj)
     elif isinstance(obj, dict):
         for value in obj.values():
             result.extend(_recursive_extract(value))
-    elif isinstance(obj, list | tuple):
+    elif isinstance(obj, (list, tuple)):
         for item in obj:
             result.extend(_recursive_extract(item))
     return result

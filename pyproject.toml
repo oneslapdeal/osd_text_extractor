@@ -140,6 +140,8 @@ exclude = [
     "build/",
     "htmlcov/",
 ]
+explicit_package_bases = true
+packages = ["osd_text_extractor"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -148,6 +150,7 @@ module = [
     "odf.*",
     "openpyxl.*",
     "striprtf.*",
+    "defusedxml.*",
 ]
 ignore_missing_imports = true
 

@@ -11,7 +11,7 @@ valid_characters = ascii_letters + digits + punctuation + " \n"
 class PlainText:
     value: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if len(self.value.strip()) <= 0:
             raise TextLengthError("Text length should be greater than zero")
 
