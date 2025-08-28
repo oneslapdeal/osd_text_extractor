@@ -1,0 +1,18 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include Makefile
+include .gitignore
+
+recursive-include src *.py
+recursive-include src *.pyi py.typed
+recursive-exclude src __pycache__
+recursive-exclude src *.py[cod]
+recursive-exclude src *.so
+
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude *.egg-info
