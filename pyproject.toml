@@ -5,6 +5,7 @@ description = "A Python library for extracting plain text from various document 
 authors = [
     {name = "OneSlap Team", email = "lxarbuz@gmail.com"}
 ]
+
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.12"
@@ -46,7 +47,7 @@ dev = [
     "bandit>=1.8.6",
     "mypy>=1.17.1",
     "pylint>=3.3.8",
-    "ruff>=0.6.9,<0.7.0",
+    "ruff==0.6.9",
     # Тестирование
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
