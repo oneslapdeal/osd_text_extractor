@@ -5,7 +5,6 @@ description = "A Python library for extracting plain text from various document 
 authors = [
     {name = "OneSlap Team", email = "lxarbuz@gmail.com"}
 ]
-
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.12"
@@ -43,18 +42,14 @@ dev = [
     "wheel>=0.45.1",
     "build>=1.2.0",
     "twine>=6.0.0",
-    # Линтеры и форматтеры
     "bandit>=1.8.6",
     "mypy>=1.17.1",
     "pylint>=3.3.8",
-    "ruff==0.6.9",
-    # Тестирование
+    "ruff>=0.6.9",
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
     "pytest-cov>=6.2.1",
-    # Безопасность
     "safety>=3.2.8",
-    # Pre-commit
     "pre-commit>=3.8.0",
 ]
 
@@ -84,12 +79,12 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
+    "E",
+    "W",
+    "F",
+    "B",
+    "C4",
+    "UP",
     "N",   # pep8-naming
     "D",   # pydocstyle
     "S",   # flake8-bandit

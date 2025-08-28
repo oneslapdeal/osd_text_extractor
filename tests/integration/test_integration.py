@@ -418,6 +418,6 @@ class TestIntegration:
 
             # Verify only Latin chars, digits, spaces, newlines
             for char in result:
-                assert char.isalnum() or char in " \n", (
-                    f"Invalid character found: {repr(char)}"
-                )
+                assert (
+                    char.isalnum() or char in " \n"
+                ), f"Invalid character found: {repr(char)}"

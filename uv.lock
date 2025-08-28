@@ -874,7 +874,7 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=1.1.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=6.2.1" },
     { name = "python-docx", specifier = ">=1.2.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = "==0.6.9" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.6.9" },
     { name = "safety", marker = "extra == 'dev'", specifier = ">=3.2.8" },
     { name = "setuptools", marker = "extra == 'dev'", specifier = ">=80.9.0" },
     { name = "striprtf", specifier = ">=0.0.29" },
