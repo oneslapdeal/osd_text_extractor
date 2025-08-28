@@ -10,6 +10,7 @@ on:
 
 jobs:
   test:
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -54,6 +55,7 @@ jobs:
 
   build:
     needs: test
+    if: github.event_name != 'release'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -80,7 +82,6 @@ jobs:
         path: dist/
 
   publish:
-    needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
     environment:
@@ -90,11 +91,22 @@ jobs:
       id-token: write
 
     steps:
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: dist
-        path: dist/
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+
+    - name: Set up Python
+      run: uv python install 3.12
+
+    - name: Install build dependencies (with dev extras)
+      run: uv sync --extra dev
+
+    - name: Build package
+      run: uv build
+
+    - name: Check package
+      run: uv run twine check dist/*
 
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
