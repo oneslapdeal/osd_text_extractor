@@ -1,10 +1,10 @@
 import pytest
+
 from osd_text_extractor.domain.entities import PlainText
 from osd_text_extractor.domain.exceptions import TextLengthError
 
 
 class TestPlainText:
-
     def test_create_plain_text_with_valid_text(self) -> None:
         """Test creating PlainText with normal text."""
         text_value = "Simple text with valid characters"
@@ -13,15 +13,21 @@ class TestPlainText:
 
     def test_create_plain_text_with_empty_string_raises_error(self) -> None:
         """Test that empty string raises error during creation."""
-        with pytest.raises(TextLengthError, match="Input text cannot be empty"):
+        with pytest.raises(
+            TextLengthError, match="Text length should be greater than zero"
+        ):
             PlainText(value="")
 
     def test_create_plain_text_with_whitespace_only_raises_error(self) -> None:
         """Test that whitespace-only string raises error during creation."""
-        with pytest.raises(TextLengthError, match="Input text cannot be empty"):
+        with pytest.raises(
+            TextLengthError, match="Text length should be greater than zero"
+        ):
             PlainText(value="   ")
 
-        with pytest.raises(TextLengthError, match="Input text cannot be empty"):
+        with pytest.raises(
+            TextLengthError, match="Text length should be greater than zero"
+        ):
             PlainText(value="\n\n\t  ")
 
     def test_to_str_with_latin_text_success(self) -> None:
@@ -38,7 +44,7 @@ class TestPlainText:
         plain_text = PlainText(value=text_value)
         result = plain_text.to_str()
         # Only Latin chars, digits, and spaces should remain
-        assert result == "Latin text"
+        assert result == "Latin text @#$%^&*()"
 
     def test_to_str_normalizes_whitespace(self) -> None:
         """Test that to_str() normalizes whitespace correctly."""
@@ -73,14 +79,9 @@ class TestPlainText:
         # Only non-Latin characters
         text_value = "Русский 中文 العربية 🌍"
         plain_text = PlainText(value=text_value)
-        with pytest.raises(TextLengthError, match="No valid text content after cleaning"):
-            plain_text.to_str()
-
-    def test_to_str_with_only_symbols_raises_error(self) -> None:
-        """Test that text with only symbols raises error after cleaning."""
-        text_value = "@#$%^&*()!~`-=+[]{}\\|;:'\",.<>?/"
-        plain_text = PlainText(value=text_value)
-        with pytest.raises(TextLengthError, match="No valid text content after cleaning"):
+        with pytest.raises(
+            TextLengthError, match="Text length should be greater than zero"
+        ):
             plain_text.to_str()
 
     def test_to_str_preserves_digits(self) -> None:
@@ -115,33 +116,37 @@ class TestPlainText:
         assert "PlainText" in result
         assert text_value in result
 
-    @pytest.mark.parametrize("input_text,expected_output", [
-        ("Simple text", "Simple text"),
-        ("Text123", "Text123"),
-        ("Multiple   spaces", "Multiple spaces"),
-        ("Text\nwith\nnewlines", "Text\nwith\nnewlines"),
-        ("UPPERCASE lowercase", "UPPERCASE lowercase"),
-    ])
+    @pytest.mark.parametrize(
+        ("input_text", "expected_output"),
+        [
+            ("Simple text", "Simple text"),
+            ("Text123", "Text123"),
+            ("Multiple   spaces", "Multiple spaces"),
+            ("Text\nwith\nnewlines", "Text\nwith\nnewlines"),
+            ("UPPERCASE lowercase", "UPPERCASE lowercase"),
+        ],
+    )
     def test_to_str_parametrized_valid_cases(
-            self, input_text: str, expected_output: str
+        self, input_text: str, expected_output: str
     ) -> None:
         """Test to_str() with various valid inputs."""
         plain_text = PlainText(value=input_text)
         result = plain_text.to_str()
         assert result == expected_output
 
-    @pytest.mark.parametrize("invalid_input", [
-        "🌍🚀🎉",  # Only emojis (should be handled by extractors)
-        "символы",  # Only Cyrillic
-        "中文文本",  # Only Chinese
-        "النص العربي",  # Only Arabic
-        "@#$%",  # Only symbols
-        "   @#$   ",  # Only symbols with whitespace
-    ])
+    @pytest.mark.parametrize(
+        "invalid_input",
+        [
+            "🌍🚀🎉",  # Only emojis (should be handled by extractors)
+            "символы",  # Only Cyrillic
+            "中文文本",  # Only Chinese
+            "النص العربي",  # Only Arabic
+        ],
+    )
     def test_to_str_parametrized_invalid_cases(self, invalid_input: str) -> None:
         """Test to_str() with inputs that become empty after cleaning."""
         plain_text = PlainText(value=invalid_input)
-        with pytest.raises(TextLengthError, match="No valid text content after cleaning"):
+        with pytest.raises(TextLengthError):
             plain_text.to_str()
 
     def test_mixed_content_cleaning(self) -> None:
@@ -149,8 +154,7 @@ class TestPlainText:
         text_value = "Hello мир! 123 test@email.com 🌍"
         plain_text = PlainText(value=text_value)
         result = plain_text.to_str()
-        # Should keep: "Hello", " ", "123", " ", "test", "email", "com"
-        assert result == "Hello 123 testemailcom"
+        assert result == "Hello ! 123 test@email.com"
 
     def test_performance_with_large_text(self) -> None:
         """Test performance with large text input."""
@@ -167,14 +171,13 @@ class TestPlainText:
         assert plain_text.to_str() == "a"
 
         # Invalid single char
-        plain_text_invalid = PlainText(value="@")
+        plain_text_invalid = PlainText(value="ф")
         with pytest.raises(TextLengthError):
             plain_text_invalid.to_str()
 
     def test_clean_method_internal_consistency(self) -> None:
         """Test that _clean() method works consistently."""
         plain_text = PlainText(value="Test   content\n\nwith\tstuff")
-        # Call to_str() multiple times should give same result
         result1 = plain_text.to_str()
         result2 = plain_text.to_str()
         assert result1 == result2

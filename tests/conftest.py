@@ -1,6 +1,8 @@
 from typing import Any
 from unittest.mock import Mock
+
 import pytest
+
 from osd_text_extractor.application.use_cases import ExtractTextUseCase
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.extractors import ExtractorFactory
@@ -12,6 +14,7 @@ class MockExtractor:
     def __init__(self, return_value: str = "extracted text"):
         self.return_value = return_value
         self.extract_calls = []
+        self.extract_calls = []
 
     @staticmethod
     def create_with_return_value(return_value: str) -> type:
@@ -20,6 +23,7 @@ class MockExtractor:
         class SpecificMockExtractor:
             @staticmethod
             def extract_plain_text(content: bytes) -> str:
+                _content = content
                 return return_value
 
         return SpecificMockExtractor
@@ -27,6 +31,7 @@ class MockExtractor:
     @staticmethod
     def extract_plain_text(content: bytes) -> str:
         # This won't work for instance tracking, but follows protocol
+        _content = content
         return "default extracted text"
 
 
@@ -56,6 +61,7 @@ class MockFailingExtractor:
 
     @staticmethod
     def extract_plain_text(content: bytes) -> str:
+        _content = content
         raise Exception("Mock extraction error")
 
 
@@ -81,6 +87,7 @@ def failing_mock_extractor() -> type:
     class FailingExtractor:
         @staticmethod
         def extract_plain_text(content: bytes) -> str:
+            _content = content
             raise ExtractionError("Test extraction error")
 
     return FailingExtractor
@@ -103,6 +110,7 @@ def failing_extractor_factory(failing_mock_extractor: type) -> Mock:
 @pytest.fixture
 def unsupported_format_factory() -> Mock:
     from osd_text_extractor.application.exceptions import UnsupportedFormatError
+
     factory = Mock(spec=ExtractorFactory)
     factory.get_extractor.side_effect = UnsupportedFormatError("Unsupported format")
     return factory
@@ -123,47 +131,65 @@ def test_format() -> str:
     return "txt"
 
 
-@pytest.fixture(params=[
-    ("pdf", b"PDF content"),
-    ("docx", b"DOCX content"),
-    ("txt", b"TXT content"),
-    ("html", b"<html>HTML content</html>"),
-    ("json", b'{"key": "value"}'),
-])
+@pytest.fixture(
+    params=[
+        ("pdf", b"PDF content"),
+        ("docx", b"DOCX content"),
+        ("txt", b"TXT content"),
+        ("html", b"<html>HTML content</html>"),
+        ("json", b'{"key": "value"}'),
+    ]
+)
 def format_content_pair(request: Any) -> tuple[str, bytes]:
     return request.param
 
 
-@pytest.fixture(params=[
-    "pdf", "docx", "xlsx", "txt", "html", "xml", "json", "md", "rtf",
-    "csv", "epub", "fb2", "ods", "odt"
-])
+@pytest.fixture(
+    params=[
+        "pdf",
+        "docx",
+        "xlsx",
+        "txt",
+        "html",
+        "xml",
+        "json",
+        "md",
+        "rtf",
+        "csv",
+        "epub",
+        "fb2",
+        "ods",
+        "odt",
+    ]
+)
 def supported_format(request: Any) -> str:
     return request.param
 
 
-@pytest.fixture(params=[
-    "unsupported", "fake", "unknown", "", "   ", "123", "test.exe"
-])
+@pytest.fixture(params=["unsupported", "fake", "unknown", "", "   ", "123", "test.exe"])
 def unsupported_format(request: Any) -> str:
     return request.param
 
 
-@pytest.fixture(params=[
-    b"",
-    b"   ",
-    b"\n\n\n",
-    b"\t\t\t",
-])
+@pytest.fixture(
+    params=[
+        b"",
+        b"   ",
+        b"\n\n\n",
+        b"\t\t\t",
+    ]
+)
 def empty_content(request: Any) -> bytes:
     return request.param
 
 
-@pytest.fixture(params=[
-    ("Very long text " * 1000).encode(),
-    b"Unicode test: \xd0\xbf\xd1\x80\xd0\xb8\xd0\xb2\xd0\xb5\xd1\x82",
-    bytes(range(256)),
-])
+@pytest.fixture(
+    params=[
+        ("Very long text " * 1000).encode(),
+        b"Unicode test: \xd0\xbf\xd1\x80\xd0\xb8\xd0\xb2\xd0\xb5\xd1\x82",
+        bytes(range(256)),
+    ]
+)
 def edge_case_content(request: Any) -> bytes:
     return request.param
 
@@ -178,7 +204,9 @@ def extractor_mapping() -> dict[str, type[TextExtractor]]:
 
 
 @pytest.fixture
-def real_extractor_factory(extractor_mapping: dict[str, type[TextExtractor]]) -> ExtractorFactory:
+def real_extractor_factory(
+    extractor_mapping: dict[str, type[TextExtractor]],
+) -> ExtractorFactory:
     return ExtractorFactory(extractor_mapping)
 
 
@@ -203,14 +231,14 @@ def sample_html_content() -> bytes:
 
 @pytest.fixture
 def sample_json_content() -> bytes:
-    return b'''{
+    return b"""{
         "title": "Test Document",
         "content": "Main content text",
         "metadata": {
-            "author": "Test Author", 
+            "author": "Test Author",
             "tags": ["test", "sample"]
         }
-    }'''
+    }"""
 
 
 @pytest.fixture
@@ -220,4 +248,4 @@ def sample_csv_content() -> bytes:
 
 @pytest.fixture
 def unicode_test_content() -> bytes:
-    return "Latin text with Русский 中文 العربية 🌍 symbols".encode('utf-8')
+    return "Latin text with Русский 中文 العربية 🌍 symbols".encode()

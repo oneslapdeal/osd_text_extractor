@@ -1,5 +1,6 @@
-import fitz
 import emoji
+import fitz
+
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 
@@ -14,7 +15,6 @@ class EPUBExtractor(TextExtractor):
                     text = page.get_text("text")
                     full_text.append(text)
             text = "\n".join(full_text)
-            text = emoji.replace_emoji(text, replace='')
-            return text
+            return emoji.replace_emoji(text, replace=" ")
         except Exception as e:
             raise ExtractionError("Failed to extract EPUB text") from e

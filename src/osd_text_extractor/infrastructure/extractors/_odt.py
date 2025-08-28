@@ -1,8 +1,9 @@
-import xml.etree.ElementTree as et
 from io import BytesIO
+
+import defusedxml.ElementTree as Et
 import emoji
+from defusedxml.ElementTree import ParseError
 from odf.opendocument import load
-from xml.etree.ElementTree import ParseError
 
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
@@ -26,15 +27,14 @@ class ODTExtractor(TextExtractor):
                 if len(xml_text) > 100 * 1024 * 1024:
                     raise ExtractionError("ODT content too large after decompression")
 
-                root = et.fromstring(xml_text)
+                root = Et.fromstring(xml_text)
 
                 max_depth = 100
                 if _get_max_depth(root) > max_depth:
                     raise ExtractionError("ODT structure too deeply nested")
 
                 text = xml_node_to_plain_text(root)
-                text = emoji.replace_emoji(text, replace='')
-                return text
+                return emoji.replace_emoji(text, replace=" ")
         except ParseError as e:
             raise ExtractionError(f"Invalid ODT XML format: {str(e)}") from e
         except Exception as e:

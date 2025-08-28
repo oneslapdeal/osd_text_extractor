@@ -1,5 +1,6 @@
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as Et
 import pytest
+
 from osd_text_extractor.infrastructure.extractors.utils import (
     decode_to_utf8,
     xml_node_to_plain_text,
@@ -7,14 +8,17 @@ from osd_text_extractor.infrastructure.extractors.utils import (
 
 
 class TestDecodeToUTF8:
-    @pytest.mark.parametrize("text,encoding", [
-        ("Simple text", "utf-8"),
-        ("Русский текст", "utf-8"),
-        ("English text", "ascii"),
-        ("Тест", "utf-16"),
-        ("Test", "iso-8859-1"),
-        ("Тестовый текст", "windows-1251"),
-    ])
+    @pytest.mark.parametrize(
+        ("text", "encoding"),
+        [
+            ("Simple text", "utf-8"),
+            ("Русский текст", "utf-8"),
+            ("English text", "ascii"),
+            ("Тест", "utf-16"),
+            ("Test", "iso-8859-1"),
+            ("Тестовый текст", "windows-1251"),
+        ],
+    )
     def test_decode_success(self, text: str, encoding: str) -> None:
         try:
             content = text.encode(encoding)
@@ -27,7 +31,7 @@ class TestDecodeToUTF8:
             assert result == text
 
     def test_decode_invalid_bytes_with_fallback(self) -> None:
-        invalid_content = b"\xff\xfe\invalid_bytes\x00"
+        invalid_content = b"\xff\xfe\\invalid_bytes\x00"
         result = decode_to_utf8(invalid_content)
         assert isinstance(result, str)
         assert len(result) > 0
@@ -60,13 +64,13 @@ class TestDecodeToUTF8:
 class TestXMLNodeToPlainText:
     def test_simple_text_node(self) -> None:
         xml = "<root>Simple text</root>"
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert result == "Simple text"
 
     def test_nested_nodes(self) -> None:
         xml = "<root>Parent <child>child text</child> after</root>"
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "Parent" in result
         assert "child text" in result
@@ -80,7 +84,7 @@ class TestXMLNodeToPlainText:
             <child3>Third child</child3>
         </root>
         """
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "First child" in result
         assert "Second child" in result
@@ -88,13 +92,13 @@ class TestXMLNodeToPlainText:
 
     def test_empty_node(self) -> None:
         xml = "<root></root>"
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert result == ""
 
     def test_node_with_only_whitespace(self) -> None:
         xml = "<root>   </root>"
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert result == ""
 
@@ -108,13 +112,14 @@ class TestXMLNodeToPlainText:
             </level1>
         </root>
         """
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "Deep text" in result
 
     def test_mixed_content(self) -> None:
-        xml = "<root>Before <em>emphasized</em> middle <strong>strong</strong> after</root>"
-        root = ET.fromstring(xml)
+        xml = ("<root>Before <em>emphasized</em> "
+               "middle <strong>strong</strong> after</root>")
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "Before" in result
         assert "emphasized" in result
@@ -124,7 +129,7 @@ class TestXMLNodeToPlainText:
 
     def test_node_with_attributes(self) -> None:
         xml = '<root><element attr="value">Text content</element></root>'
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "Text content" in result
         assert "attr" not in result
@@ -132,20 +137,20 @@ class TestXMLNodeToPlainText:
 
     def test_self_closing_tags(self) -> None:
         xml = "<root>Before <br/> after</root>"
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "Before" in result
         assert "after" in result
 
     def test_cdata_sections(self) -> None:
         xml = "<root><![CDATA[CDATA content]]></root>"
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "CDATA content" in result
 
     def test_unicode_content(self) -> None:
         xml = "<root>Unicode: 你好 🌍 Русский</root>"
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert "Unicode:" in result
         assert "你好" in result
@@ -158,7 +163,7 @@ class TestXMLNodeToPlainText:
             xml_parts.append(f"<item{i}>Content {i}</item{i}>")
         xml_parts.append("</root>")
         xml = "".join(xml_parts)
-        root = ET.fromstring(xml)
+        root = Et.fromstring(xml)
         result = xml_node_to_plain_text(root)
         assert isinstance(result, str)
         assert len(result) > 0

@@ -2,13 +2,12 @@ import pytest
 
 from osd_text_extractor.domain.exceptions import TextLengthError
 
-class TestDomainExceptions:
 
+class TestDomainExceptions:
     def test_text_length_error_creation(self) -> None:
         message = "Text is too short"
         exception = TextLengthError(message)
         assert str(exception) == message
-
 
     def test_text_length_error_without_message(self) -> None:
         exception = TextLengthError()
@@ -20,5 +19,5 @@ class TestDomainExceptions:
             raise TextLengthError(message)
 
     def test_domain_exception_can_be_caught_as_exception(self) -> None:
-        with pytest.raises(Exception):
+        with pytest.raises(TextLengthError):
             raise TextLengthError("test")

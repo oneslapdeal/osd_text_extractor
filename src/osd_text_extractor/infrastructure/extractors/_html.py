@@ -1,4 +1,3 @@
-import re
 import emoji
 from bs4 import BeautifulSoup
 
@@ -14,10 +13,7 @@ class HTMLExtractor(TextExtractor):
             soup = BeautifulSoup(html_content, "lxml")
             for element in soup(["script", "style", "meta", "link", "noscript", "svg"]):
                 element.decompose()
-            text = soup.get_text("\n", strip=True)
-            text = re.sub(r"(\n\s*){2,}", "\n\n", text)
-            text = re.sub(r"[ \t]{2,}", " ", text)
-            text = emoji.replace_emoji(text.strip(), replace='')
-            return text
+            text = soup.get_text()
+            return emoji.replace_emoji(text.strip(), replace=" ")
         except Exception as e:
             raise ExtractionError("Failed to extract HTML text") from e

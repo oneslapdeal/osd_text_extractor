@@ -1,4 +1,5 @@
 from unittest.mock import Mock, patch
+
 import pytest
 
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
@@ -11,7 +12,7 @@ from osd_text_extractor.presentation.facade import extract_text
 class TestExtractTextFacade:
     """Test the facade function with proper mocking."""
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
+    @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_success_flow(self, mock_create_container: Mock) -> None:
         """Test successful extraction flow."""
         # Setup mocks
@@ -34,11 +35,15 @@ class TestExtractTextFacade:
         mock_use_case.execute.assert_called_once_with(content, format_name)
         mock_container.close.assert_called_once()
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_unsupported_format_error(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_unsupported_format_error(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test handling of unsupported format error."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
-        mock_use_case.execute.side_effect = UnsupportedFormatError("Unsupported format: unknown")
+        mock_use_case.execute.side_effect = UnsupportedFormatError(
+            "Unsupported format: unknown"
+        )
 
         mock_container = Mock()
         mock_container.get.return_value = mock_use_case
@@ -50,7 +55,7 @@ class TestExtractTextFacade:
         # Container should still be closed
         mock_container.close.assert_called_once()
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
+    @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_extraction_error(self, mock_create_container: Mock) -> None:
         """Test handling of extraction error."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
@@ -65,23 +70,31 @@ class TestExtractTextFacade:
 
         mock_container.close.assert_called_once()
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_domain_validation_error(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_domain_validation_error(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test handling of domain validation error."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
-        mock_use_case.execute.side_effect = TextLengthError("No valid text content after cleaning")
+        mock_use_case.execute.side_effect = TextLengthError(
+            "No valid text content after cleaning"
+        )
 
         mock_container = Mock()
         mock_container.get.return_value = mock_use_case
         mock_create_container.return_value = mock_container
 
-        with pytest.raises(TextLengthError, match="No valid text content after cleaning"):
+        with pytest.raises(
+            TextLengthError, match="No valid text content after cleaning"
+        ):
             extract_text(b"content", "txt")
 
         mock_container.close.assert_called_once()
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_container_creation_error(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_container_creation_error(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test handling of container creation error."""
         mock_create_container.side_effect = Exception("Container creation failed")
 
@@ -91,8 +104,10 @@ class TestExtractTextFacade:
         # No container to close in this case
         mock_create_container.assert_called_once()
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_use_case_retrieval_error(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_use_case_retrieval_error(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test handling of use case retrieval error."""
         mock_container = Mock()
         mock_container.get.side_effect = Exception("Use case retrieval failed")
@@ -104,8 +119,10 @@ class TestExtractTextFacade:
         # Container should still be closed even on error
         mock_container.close.assert_called_once()
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_container_close_error_handling(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_container_close_error_handling(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test that container close errors don't interfere with results."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
         mock_use_case.execute.return_value = "extracted text"
@@ -116,24 +133,27 @@ class TestExtractTextFacade:
         mock_create_container.return_value = mock_container
 
         # Should still get the result despite close error
-        result = extract_text(b"content", "txt")
+        result = extract_text(b"extracted text", "txt")
 
         assert result == "extracted text"
         mock_container.close.assert_called_once()
 
-    @pytest.mark.parametrize("content,format_name,expected_substring", [
-        (b"Simple text content", "txt", "Simple text"),
-        (b"<html><body>HTML content</body></html>", "html", "HTML"),
-        (b'{"key": "JSON content"}', "json", "JSON"),
-        (b"CSV,Header\nValue,Data", "csv", "CSV"),
-    ])
-    @patch('osd_text_extractor.presentation.facade.create_container')
+    @pytest.mark.parametrize(
+        ("content", "format_name", "expected_substring"),
+        [
+            (b"Simple text content", "txt", "Simple text"),
+            (b"<html><body>HTML content</body></html>", "html", "HTML"),
+            (b'{"key": "JSON content"}', "json", "JSON"),
+            (b"CSV,Header\nValue,Data", "csv", "CSV"),
+        ],
+    )
+    @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_various_formats(
-            self,
-            mock_create_container: Mock,
-            content: bytes,
-            format_name: str,
-            expected_substring: str
+        self,
+        mock_create_container: Mock,
+        content: bytes,
+        format_name: str,
+        expected_substring: str,
     ) -> None:
         """Test extraction with various formats and content."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
@@ -148,8 +168,10 @@ class TestExtractTextFacade:
         assert expected_substring in result
         mock_use_case.execute.assert_called_once_with(content, format_name)
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_large_content_handling(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_large_content_handling(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test extraction with large content."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
         mock_use_case.execute.return_value = "Large content extracted"
@@ -166,8 +188,10 @@ class TestExtractTextFacade:
         assert result == "Large content extracted"
         mock_use_case.execute.assert_called_once_with(large_content, "txt")
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_binary_content_handling(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_binary_content_handling(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test extraction with binary content."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
         mock_use_case.execute.return_value = "Binary content processed"
@@ -184,8 +208,10 @@ class TestExtractTextFacade:
         assert result == "Binary content processed"
         mock_use_case.execute.assert_called_once_with(binary_content, "txt")
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_dependency_injection_isolation(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_dependency_injection_isolation(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test that each call gets its own container instance."""
         call_count = 0
 
@@ -212,8 +238,10 @@ class TestExtractTextFacade:
         assert mock_create_container.call_count == 2
         assert mock_container.close.call_count == 2
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_preserves_use_case_return_type(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_preserves_use_case_return_type(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test that facade preserves the exact return type from use case."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
         mock_use_case.execute.return_value = "exact string result"
@@ -227,8 +255,10 @@ class TestExtractTextFacade:
         assert isinstance(result, str)
         assert result == "exact string result"
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_unicode_content_handling(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_unicode_content_handling(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test extraction with Unicode content."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
         mock_use_case.execute.return_value = "Unicode content processed"
@@ -238,15 +268,17 @@ class TestExtractTextFacade:
         mock_create_container.return_value = mock_container
 
         # Unicode content
-        unicode_content = "Тест with 中文 and العربية".encode('utf-8')
+        unicode_content = "Тест with 中文 and العربية".encode()
 
         result = extract_text(unicode_content, "txt")
 
         assert result == "Unicode content processed"
         mock_use_case.execute.assert_called_once_with(unicode_content, "txt")
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
-    def test_extract_text_format_parameter_passthrough(self, mock_create_container: Mock) -> None:
+    @patch("osd_text_extractor.presentation.facade.create_container")
+    def test_extract_text_format_parameter_passthrough(
+        self, mock_create_container: Mock
+    ) -> None:
         """Test that format parameter is passed through correctly."""
         mock_use_case = Mock(spec=ExtractTextUseCase)
         mock_use_case.execute.return_value = "format test result"
@@ -267,7 +299,7 @@ class TestExtractTextFacade:
 
         assert actual_calls == expected_calls
 
-    @patch('osd_text_extractor.presentation.facade.create_container')
+    @patch("osd_text_extractor.presentation.facade.create_container")
     def test_extract_text_concurrent_safety(self, mock_create_container: Mock) -> None:
         """Test that facade is safe for concurrent use (each call isolated)."""
         import threading

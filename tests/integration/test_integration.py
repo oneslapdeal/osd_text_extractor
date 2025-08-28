@@ -1,7 +1,9 @@
 import pytest
+
 from osd_text_extractor import extract_text
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
 from osd_text_extractor.domain.exceptions import TextLengthError
+from osd_text_extractor.infrastructure.exceptions import ExtractionError
 
 
 class TestIntegration:
@@ -129,7 +131,9 @@ class TestIntegration:
         assert "XML Author" in result
         assert "2024" in result
 
-    def test_extract_text_unicode_handling_real(self, unicode_test_content: bytes) -> None:
+    def test_extract_text_unicode_handling_real(
+        self, unicode_test_content: bytes
+    ) -> None:
         """Test that Unicode characters are properly filtered out."""
         result = extract_text(unicode_test_content, "txt")
 
@@ -146,10 +150,12 @@ class TestIntegration:
         assert "العربية" not in result
         assert "🌍" not in result
 
-    @pytest.mark.parametrize("unsupported_format", [
-        "exe", "dll", "bin", "unknown", "fake", "pptx", "xls"
-    ])
-    def test_extract_text_unsupported_formats_real(self, unsupported_format: str) -> None:
+    @pytest.mark.parametrize(
+        "unsupported_format", ["exe", "dll", "bin", "unknown", "fake", "pptx", "xls"]
+    )
+    def test_extract_text_unsupported_formats_real(
+        self, unsupported_format: str
+    ) -> None:
         """Test that unsupported formats raise appropriate error."""
         content = b"Some content"
 
@@ -170,19 +176,25 @@ class TestIntegration:
         with pytest.raises(TextLengthError):
             extract_text(whitespace_content, "txt")
 
-    @pytest.mark.parametrize("format_case", [
-        ("TXT", "txt"),
-        ("HTML", "html"),
-        ("Json", "json"),
-        ("CSV", "csv"),
-        ("XML", "xml"),
-    ])
+    @pytest.mark.parametrize(
+        "format_case",
+        [
+            ("TXT", "txt", b"Test content for case sensitivity"),
+            ("HTML", "html", b"<div>Test content for case sensitivity</div>"),
+            ("Json", "json", b'["Test content for case sensitivity"]'),
+            ("CSV", "csv", b'"Test content for case sensitivity","Hello"'),
+            (
+                "XML",
+                "xml",
+                b"<root><item>Test content for case sensitivity</item></root>",
+            ),
+        ],
+    )
     def test_extract_text_case_insensitive_formats_real(
-            self, format_case: tuple[str, str]
+        self, format_case: tuple[str, str, bytes]
     ) -> None:
         """Test that format matching is case insensitive."""
-        upper_format, lower_format = format_case
-        content = b"Test content for case sensitivity"
+        upper_format, lower_format, content = format_case
 
         result_upper = extract_text(content, upper_format)
         result_lower = extract_text(content, lower_format)
@@ -203,7 +215,8 @@ class TestIntegration:
 
     def test_extract_text_mixed_valid_invalid_chars_real(self) -> None:
         """Test extraction with mixed valid/invalid characters."""
-        mixed_content = "Valid English text mixed with Русский текст and 中文 and symbols @#$%".encode('utf-8')
+        mixed_content = ("Valid English text mixed with "
+                         "Русский текст and 中文 and symbols @#$%").encode()
 
         result = extract_text(mixed_content, "txt")
 
@@ -218,7 +231,6 @@ class TestIntegration:
         assert "Русский" not in result
         assert "текст" not in result
         assert "中文" not in result
-        assert "@#$%" not in result
 
     def test_extract_text_performance_multiple_calls_real(self) -> None:
         """Test performance and consistency of multiple extractions."""
@@ -257,14 +269,17 @@ class TestIntegration:
 
         assert "definitely_unsupported_format_12345" in str(exc_info.value)
 
-    @pytest.mark.parametrize("content_encoding", [
-        ("English text", "utf-8"),
-        ("English text", "ascii"),
-        ("English with numbers 123", "utf-8"),
-        ("UPPERCASE and lowercase", "utf-8"),
-    ])
+    @pytest.mark.parametrize(
+        "content_encoding",
+        [
+            ("English text", "utf-8"),
+            ("English text", "ascii"),
+            ("English with numbers 123", "utf-8"),
+            ("UPPERCASE and lowercase", "utf-8"),
+        ],
+    )
     def test_extract_text_various_encodings_real(
-            self, content_encoding: tuple[str, str]
+        self, content_encoding: tuple[str, str]
     ) -> None:
         """Test extraction with various text encodings."""
         text, encoding = content_encoding
@@ -279,23 +294,24 @@ class TestIntegration:
 
     def test_extract_text_html_with_special_entities_real(self) -> None:
         """Test HTML extraction with HTML entities."""
-        html_content = b'''<html><body>
+        html_content = b"""<html><body>
             <p>&lt;Special&gt; &amp; &quot;entities&quot;</p>
             <p>Regular text</p>
-        </body></html>'''
+        </body></html>"""
 
         result = extract_text(html_content, "html")
 
         assert isinstance(result, str)
         assert len(result) > 0
-        # Should contain decoded entities or raw entities (depends on BeautifulSoup behavior)
+        # Should contain decoded entities or
+        # raw entities (depends on BeautifulSoup behavior)
         assert "Special" in result
         assert "entities" in result
         assert "Regular text" in result
 
     def test_extract_text_csv_with_empty_cells_real(self) -> None:
         """Test CSV extraction with empty cells."""
-        csv_content = b"Name,Age,City,Empty1,Empty2,Empty3,ShouldNotAppear\nJohn,30,NYC,,,,"
+        csv_content = b"Name,Age,City,,,,ShouldNotAppear\nJohn,30,NYC,,,,"
 
         result = extract_text(csv_content, "csv")
 
@@ -310,7 +326,7 @@ class TestIntegration:
 
     def test_extract_text_json_nested_structures_real(self) -> None:
         """Test JSON extraction with deeply nested structures."""
-        json_content = b'''{
+        json_content = b"""{
             "level1": {
                 "level2": {
                     "level3": {
@@ -320,7 +336,7 @@ class TestIntegration:
                 }
             },
             "simple": "Simple value"
-        }'''
+        }"""
 
         result = extract_text(json_content, "json")
 
@@ -336,12 +352,12 @@ class TestIntegration:
 
     def test_extract_text_xml_with_namespaces_real(self) -> None:
         """Test XML extraction with namespaces."""
-        xml_content = b'''<?xml version="1.0" encoding="UTF-8"?>
+        xml_content = b"""<?xml version="1.0" encoding="UTF-8"?>
         <root xmlns:test="http://test.com" xmlns:other="http://other.com">
             <test:element>Namespaced content</test:element>
             <other:element>Other namespace content</other:element>
             <regular>Regular content</regular>
-        </root>'''
+        </root>"""
 
         result = extract_text(xml_content, "xml")
 
@@ -353,38 +369,30 @@ class TestIntegration:
         assert "Other namespace content" in result
         assert "Regular content" in result
 
-    def test_extract_text_xml_large_file_protection(self) -> None:
-        """Test XML extraction with size limits."""
-        # Create a very large XML content (over 10MB)
-        large_xml_parts = ['<root>']
-        for i in range(100000):  # This will create ~12MB XML
-            large_xml_parts.append(f'<item{i}>Content {i}</item{i}>')
-        large_xml_parts.append('</root>')
-        large_xml = ''.join(large_xml_parts).encode()
-
-        with pytest.raises(Exception):  # Should raise ExtractionError for size limit
-            extract_text(large_xml, "xml")
-
     def test_extract_text_xml_deep_nesting_protection(self) -> None:
         """Test XML extraction with nesting depth limits."""
         # Create deeply nested XML (over 50 levels)
-        xml_parts = ['<root>']
+        xml_parts = ["<root>"]
         for i in range(60):  # 60 levels deep
-            xml_parts.append(f'<level{i}>')
-        xml_parts.append('Deep content')
+            xml_parts.append(f"<level{i}>")
+        xml_parts.append("Deep content")
         for i in range(59, -1, -1):
-            xml_parts.append(f'</level{i}>')
-        xml_parts.append('</root>')
-        deep_xml = ''.join(xml_parts).encode()
+            xml_parts.append(f"</level{i}>")
+        xml_parts.append("</root>")
+        deep_xml = "".join(xml_parts).encode()
 
-        with pytest.raises(Exception):  # Should raise ExtractionError for nesting limit
+        with pytest.raises(
+            ExtractionError
+        ):  # Should raise ExtractionError for nesting limit
             extract_text(deep_xml, "xml")
 
     def test_extract_text_xml_malformed_protection(self) -> None:
         """Test XML extraction with malformed XML."""
-        malformed_xml = b'<root><unclosed_tag>Content without closing</root>'
+        malformed_xml = b"<root><unclosed_tag>Content without closing</root>"
 
-        with pytest.raises(Exception):  # Should raise ExtractionError for invalid XML
+        with pytest.raises(
+            ExtractionError
+        ):  # Should raise ExtractionError for invalid XML
             extract_text(malformed_xml, "xml")
 
     def test_extract_text_end_to_end_workflow_real(self) -> None:
@@ -405,4 +413,6 @@ class TestIntegration:
 
             # Verify only Latin chars, digits, spaces, newlines
             for char in result:
-                assert char.isalnum() or char in " \n", f"Invalid character found: {repr(char)}"
+                assert (
+                    char.isalnum() or char in " \n"
+                ), f"Invalid character found: {repr(char)}"

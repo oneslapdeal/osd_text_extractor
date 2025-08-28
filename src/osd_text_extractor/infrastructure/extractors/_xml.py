@@ -1,6 +1,7 @@
-import xml.etree.ElementTree as et
+import defusedxml.ElementTree as Et
 import emoji
-from xml.etree.ElementTree import ParseError
+from defusedxml.ElementTree import ParseError
+
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 from osd_text_extractor.infrastructure.extractors.utils import (
@@ -18,15 +19,14 @@ class XMLExtractor(TextExtractor):
             if len(xml_text) > 10 * 1024 * 1024:
                 raise ExtractionError("XML file too large for processing")
 
-            root = et.fromstring(xml_text)
+            root = Et.fromstring(xml_text)
 
             max_depth = 50
             if _get_max_depth(root) > max_depth:
                 raise ExtractionError("XML structure too deeply nested")
 
             text = xml_node_to_plain_text(root)
-            text = emoji.replace_emoji(text, replace='')
-            return text
+            return emoji.replace_emoji(text, replace=" ")
         except ParseError as e:
             raise ExtractionError(f"Invalid XML format: {str(e)}") from e
         except Exception as e:

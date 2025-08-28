@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+
 import pytest
 
 from osd_text_extractor.application.exceptions import UnsupportedFormatError
@@ -8,13 +9,12 @@ from osd_text_extractor.infrastructure.exceptions import ExtractionError
 
 
 class TestExtractTextUseCase:
-
     def test_execute_success(
         self,
         mock_extractor_factory: Mock,
         tracking_mock_extractor: type,
         test_content: bytes,
-        test_format: str
+        test_format: str,
     ) -> None:
         use_case = ExtractTextUseCase(mock_extractor_factory)
 
@@ -24,9 +24,7 @@ class TestExtractTextUseCase:
         mock_extractor_factory.get_extractor.assert_called_once_with(test_format)
         assert test_content in tracking_mock_extractor.calls
 
-    def test_execute_with_different_formats(
-        self, mock_extractor_factory: Mock
-    ) -> None:
+    def test_execute_with_different_formats(self, mock_extractor_factory: Mock) -> None:
         test_cases = [
             (b"PDF content", "pdf", "extracted from pdf"),
             (b"DOCX content", "docx", "extracted from docx"),
@@ -35,13 +33,18 @@ class TestExtractTextUseCase:
             (b"Plain text", "txt", "extracted from txt"),
         ]
 
-        for content, format_name, expected_result in test_cases:
+        def create_mock_extractor(expected_result: str):
             class SpecificMockExtractor:
                 @staticmethod
                 def extract_plain_text(content: bytes) -> str:
+                    _content = content
                     return expected_result
 
-            mock_extractor_factory.get_extractor.return_value = SpecificMockExtractor
+            return SpecificMockExtractor
+
+        for content, format_name, expected_result in test_cases:
+            mock_extractor_factory.get_extractor.return_value = (
+                create_mock_extractor(expected_result))
             use_case = ExtractTextUseCase(mock_extractor_factory)
 
             result = use_case.execute(content, format_name)
@@ -74,7 +77,9 @@ class TestExtractTextUseCase:
         factory.get_extractor.return_value = empty_mock_extractor
         use_case = ExtractTextUseCase(factory)
 
-        with pytest.raises(TextLengthError, match="Input text cannot be empty"):
+        with pytest.raises(
+            TextLengthError, match="Text length should be greater than zero"
+        ):
             use_case.execute(test_content, test_format)
 
     def test_execute_format_case_sensitivity(
@@ -90,7 +95,10 @@ class TestExtractTextUseCase:
             mock_extractor_factory.reset_mock()
 
     def test_execute_with_large_content(
-        self, mock_extractor_factory: Mock, tracking_mock_extractor: type, test_format: str
+        self,
+        mock_extractor_factory: Mock,
+        tracking_mock_extractor: type,
+        test_format: str,
     ) -> None:
         large_content = b"Large content " * 10000  # ~140KB
         use_case = ExtractTextUseCase(mock_extractor_factory)
@@ -101,7 +109,10 @@ class TestExtractTextUseCase:
         assert large_content in tracking_mock_extractor.calls
 
     def test_execute_with_binary_content(
-        self, mock_extractor_factory: Mock, tracking_mock_extractor: type, test_format: str
+        self,
+        mock_extractor_factory: Mock,
+        tracking_mock_extractor: type,
+        test_format: str,
     ) -> None:
         binary_content = bytes(range(256))
         use_case = ExtractTextUseCase(mock_extractor_factory)
@@ -117,6 +128,7 @@ class TestExtractTextUseCase:
         class MixedContentExtractor:
             @staticmethod
             def extract_plain_text(content: bytes) -> str:
+                _content = content
                 return "Latin text with Русский mixed content"
 
         mock_extractor_factory.get_extractor.return_value = MixedContentExtractor
@@ -133,33 +145,40 @@ class TestExtractTextUseCase:
         class NonLatinExtractor:
             @staticmethod
             def extract_plain_text(content: bytes) -> str:
+                _content = content
                 return "Русский текст 中文 العربية"
 
         mock_extractor_factory.get_extractor.return_value = NonLatinExtractor
         use_case = ExtractTextUseCase(mock_extractor_factory)
 
-        with pytest.raises(TextLengthError, match="No valid text content after cleaning"):
+        with pytest.raises(
+            TextLengthError, match="Text length should be greater than zero"
+        ):
             use_case.execute(test_content, test_format)
 
-    @pytest.mark.parametrize("whitespace_text,expected_clean", [
-        ("   text with leading spaces", "text with leading spaces"),
-        ("text with trailing spaces   ", "text with trailing spaces"),
-        ("   text with both   ", "text with both"),
-        ("text\nwith\nnewlines", "text\nwith\nnewlines"),
-        ("text\twith\ttabs", "text with tabs"),
-        ("text  with  multiple  spaces", "text with multiple spaces"),
-    ])
+    @pytest.mark.parametrize(
+        ("whitespace_text", "expected_clean"),
+        [
+            ("   text with leading spaces", "text with leading spaces"),
+            ("text with trailing spaces   ", "text with trailing spaces"),
+            ("   text with both   ", "text with both"),
+            ("text\nwith\nnewlines", "text\nwith\nnewlines"),
+            ("text\twith\ttabs", "text with tabs"),
+            ("text  with  multiple  spaces", "text with multiple spaces"),
+        ],
+    )
     def test_execute_whitespace_normalization(
         self,
         mock_extractor_factory: Mock,
         test_content: bytes,
         test_format: str,
         whitespace_text: str,
-        expected_clean: str
+        expected_clean: str,
     ) -> None:
         class WhitespaceExtractor:
             @staticmethod
             def extract_plain_text(content: bytes) -> str:
+                _content = content
                 return whitespace_text
 
         mock_extractor_factory.get_extractor.return_value = WhitespaceExtractor
@@ -174,6 +193,7 @@ class TestExtractTextUseCase:
         class SpecificErrorExtractor:
             @staticmethod
             def extract_plain_text(content: bytes) -> str:
+                _content = content
                 raise ExtractionError("Specific extraction failure")
 
         factory = Mock()

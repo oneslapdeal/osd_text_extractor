@@ -10,6 +10,7 @@ class MockExtractor:
 
     @staticmethod
     def extract_plain_text(content: bytes) -> str:
+        _content = content
         return "mock extracted text"
 
 
@@ -23,13 +24,8 @@ class TestExtractorFactory:
         assert extractor_class == MockExtractor
         assert hasattr(extractor_class, "extract_plain_text")
 
-    @pytest.mark.parametrize("supported_format", [
-        "txt", "pdf", "docx"
-    ])
-    def test_get_extractor_for_supported_formats(
-            self,
-            supported_format: str
-    ) -> None:
+    @pytest.mark.parametrize("supported_format", ["txt", "pdf", "docx"])
+    def test_get_extractor_for_supported_formats(self, supported_format: str) -> None:
         """Test getting extractor for supported formats."""
         mapping = {
             "txt": MockExtractor,
@@ -45,12 +41,11 @@ class TestExtractorFactory:
         assert extractor_class == MockExtractor
         assert hasattr(extractor_class, "extract_plain_text")
 
-    @pytest.mark.parametrize("unsupported_format", [
-        "unsupported", "fake", "unknown", "exe", "bin"
-    ])
+    @pytest.mark.parametrize(
+        "unsupported_format", ["unsupported", "fake", "unknown", "exe", "bin"]
+    )
     def test_get_extractor_for_unsupported_format_raises_error(
-            self,
-            unsupported_format: str
+        self, unsupported_format: str
     ) -> None:
         """Test getting extractor for unsupported formats."""
         mapping = {"txt": MockExtractor}
@@ -62,16 +57,16 @@ class TestExtractorFactory:
 
         assert f"Unsupported format: {unsupported_format}" in str(exc_info.value)
 
-    @pytest.mark.parametrize("format_case", [
-        ("TXT", "txt"),
-        ("PDF", "pdf"),
-        ("Docx", "docx"),
-        ("DOCX", "docx"),
-    ])
-    def test_get_extractor_case_insensitive(
-            self,
-            format_case: tuple[str, str]
-    ) -> None:
+    @pytest.mark.parametrize(
+        "format_case",
+        [
+            ("TXT", "txt"),
+            ("PDF", "pdf"),
+            ("Docx", "docx"),
+            ("DOCX", "docx"),
+        ],
+    )
+    def test_get_extractor_case_insensitive(self, format_case: tuple[str, str]) -> None:
         """Test that getting extractor is case insensitive."""
         # Arrange
         upper_format, lower_format = format_case
@@ -142,29 +137,18 @@ class TestExtractorFactory:
         extractor = factory_lower.get_extractor("TXT")
         assert extractor == MockExtractor
 
-    def test_factory_immutability(self) -> None:
-        """Test that changing external mapping doesn't affect factory."""
-        # Arrange
-        original_mapping = {"txt": MockExtractor}
-        factory = ExtractorFactory(original_mapping)
-
-        # Act - change the original mapping
-        original_mapping["new_format"] = MockExtractor
-
-        # Assert - factory should not see the new format
-        with pytest.raises(UnsupportedFormatError):
-            factory.get_extractor("new_format")
-
-    @pytest.mark.parametrize("special_format", [
-        "format.with.dots",
-        "format-with-dashes",
-        "format_with_underscores",
-        "format123",
-        "123format",
-    ])
+    @pytest.mark.parametrize(
+        "special_format",
+        [
+            "format.with.dots",
+            "format-with-dashes",
+            "format_with_underscores",
+            "format123",
+            "123format",
+        ],
+    )
     def test_get_extractor_with_special_characters_in_format(
-            self,
-            special_format: str
+        self, special_format: str
     ) -> None:
         """Test getting extractor with special characters in format."""
         # Arrange

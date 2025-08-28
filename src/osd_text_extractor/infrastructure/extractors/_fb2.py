@@ -1,5 +1,6 @@
-import fitz
 import emoji
+import fitz
+
 from osd_text_extractor.domain.interfaces import TextExtractor
 from osd_text_extractor.infrastructure.exceptions import ExtractionError
 
@@ -14,7 +15,6 @@ class FB2Extractor(TextExtractor):
                     text = page.get_text("text")
                     extracted_pages.append(text)
             text = "\n".join(extracted_pages)
-            text = emoji.replace_emoji(text, replace='')
-            return text
+            return emoji.replace_emoji(text, replace=" ")
         except Exception as e:
             raise ExtractionError("Failed to extract FB2 text") from e
